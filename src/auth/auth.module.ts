@@ -13,7 +13,9 @@ import { AuthGuard } from './auth.guard';
     JwtModule.register({
       global: true,
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+      // access token 유효시간
+      // 7 days
+      signOptions: { expiresIn: '7d' },
     }),
   ],
   providers: [
