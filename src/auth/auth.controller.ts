@@ -9,6 +9,9 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from './decorator/public.decorator';
+import { SignInDto } from './dto/signIn.dto';
+import { Roles } from './decorator/roles.decorator';
+import { Role } from './role.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -17,12 +20,18 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: Record<string, any>) {
-    return this.authService.signIn(signInDto.username, signInDto.password);
+  signIn(@Body() signInDto: SignInDto) {
+    return this.authService.signIn(signInDto.userId, signInDto.password);
   }
 
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Roles(Role.Admin)
+  @Get('admin-test')
+  adminTest() {
+    return 'Hello admin!';
   }
 }
