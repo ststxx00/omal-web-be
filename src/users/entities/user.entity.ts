@@ -16,7 +16,10 @@ export class User {
   username: string;
 
   @Prop()
-  roles: Role[];
+  roles: Role;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const UserSchema = SchemaFactory.createForClass(User).set(
+  'timestamps',
+  true,
+);

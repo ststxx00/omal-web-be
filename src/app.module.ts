@@ -5,6 +5,8 @@ import { CatModule } from './cat/cat.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { DailyDataModule } from './daily-data/daily-data.module';
+import { VocabularyModule } from './vocabulary/vocabulary.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { UsersModule } from './users/users.module';
     CatModule,
     AuthModule,
     UsersModule,
+    DailyDataModule,
+    VocabularyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
