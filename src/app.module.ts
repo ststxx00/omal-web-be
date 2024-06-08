@@ -10,7 +10,7 @@ import { VocabularyModule } from './vocabulary/vocabulary.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017'),
+    MongooseModule.forRoot('mongodb://localhost:27017/omal_web'),
     CatModule,
     AuthModule,
     UsersModule,
