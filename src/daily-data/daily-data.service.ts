@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { DailyData } from './entities/daily-data.entity';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { Reading } from 'src/types';
@@ -11,31 +11,6 @@ export class DailyDataService {
   constructor(
     @InjectModel(DailyData.name) private dailyDataModel: Model<DailyData>,
   ) {}
-
-  async scrapMissa(targetTitle: string): Promise<any> {
-    const url = 'https://maria.catholic.or.kr/mi_pr/missa/missa.asp?menu=missa&gomonth=2024-12-25';
-    try {
-      const { data } = await axios.get(url);
-      const $ = cheerio.load(data);
-      let titleIndex = -1;
-      $('.bd_tit').each((i, el) => {
-        if ($(el).text().includes(targetTitle)) {
-          titleIndex = i;
-          return false; // Break the loop
-        }
-      });
-      const title = titleIndex !== -1 ? $('.bd_tit').eq(titleIndex).text().trim() : '';
-      const reading = $('.board_layout').eq(titleIndex).text().trim();
-      return {
-        titleIndex,
-        title,
-        reading
-      };
-    } catch (error) {
-      console.error('Error scraping readings:', error);
-      return 'error...';
-    }
-  }
 
   async scrapScriptures($: cheerio.CheerioAPI, index: number): Promise<Reading> {
     let titleIndex = -1;
@@ -87,7 +62,7 @@ export class DailyDataService {
   }
 
   // date ex : '2024-12-25'
-  async scrapDay(date: string): Promise<Reading[]> {
+  async scrapDay(date: string): Promise<Types.ObjectId> {
     const url = `https://maria.catholic.or.kr/mi_pr/missa/missa.asp?menu=missa&gomonth=${date}`;
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
@@ -102,18 +77,26 @@ export class DailyDataService {
     }
     const scrapGosphelRes = await this.scrapGosphel($);
     readingList.push(scrapGosphelRes)
-    return readingList;
+
+    const dailyData = new this.dailyDataModel({
+      date: {
+        year: Number(date.split('-')[0]),
+        month: Number(date.split('-')[1]),
+        day: Number(date.split('-')[2]),
+      },
+      status: 'DRAFT',
+      scripture: readingList.filter((reading) => reading.type === 'SCRIPTURE'),
+      gospel: readingList.filter((reading) => reading.type === 'GOSPEL'),
+      reflection: '',
+      videoUrl: '',
+    });
+    const savedDailyData = await dailyData.save();
+    const dailyDataId = savedDailyData._id;
+
+    return dailyDataId;
   }
 
   removeAngleBracketContent(text: string): string {
     return text.replace(/<[^>]*>/g, '').trim();
   }
 }
-
-// Reading type으로 변환해야할것
-type ScrapRes = {
-  titleIndex: number,
-  title: string,
-  reading: string,
-}
-
