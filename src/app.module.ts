@@ -7,10 +7,14 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DailyDataModule } from './daily-data/daily-data.module';
 import { VocabularyModule } from './vocabulary/vocabulary.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost:27017/omal_web'),
+    ConfigModule.forRoot({
+      isGlobal: true, // makes the module globally available
+    }),
+    MongooseModule.forRoot('mongodb://localhost:27017/omal_web'), 
     CatModule,
     AuthModule,
     UsersModule,
