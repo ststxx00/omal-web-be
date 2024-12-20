@@ -83,7 +83,7 @@ export class DailyDataService {
         month,
         day,
       },
-      status: 'DRAFT',
+      status: '-',
       scripture: readingList.filter((reading) => reading.type === 'SCRIPTURE'),
       gospel: readingList.filter((reading) => reading.type === 'GOSPEL'),
       reflection: '',

@@ -4,7 +4,10 @@ export type Ymd = {
   day: number;
 };
 
-export type DailyDataStatus = 'DRAFT' | 'PUBLISHED';
+// - : 미작성
+// DRAFT : 임시 저장
+// PUBLISHED : 게시됨
+export type DailyDataStatus = '-' | 'DRAFT' | 'PUBLISHED';
 
 export type Reading = {
   type: ReadingType; // Scripture(독서) | Gospel(복음)
