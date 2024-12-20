@@ -20,7 +20,7 @@ export class DailyDataService {
         return false; // Break the loop
       }
     });
-    const title = titleIndex !== -1 ? $('.bd_tit').eq(titleIndex).text().trim() : '';
+    const title = titleIndex !== -1 ? $('.bd_tit').eq(titleIndex).text().trim() : '-';
     let reading = $('.board_layout').eq(titleIndex).text().trim();
     reading = this.removeAngleBracketContent(reading);
     const unwantedString = '주님의 말씀입니다.◎ 하느님, 감사합니다.';
@@ -45,7 +45,7 @@ export class DailyDataService {
         return false; // Break the loop
       }
     });
-    const title = titleIndex !== -1 ? $('.bd_tit').eq(titleIndex).text().trim() : '';
+    const title = titleIndex !== -1 ? $('.bd_tit').eq(titleIndex).text().trim() : '-';
     let reading = $('.board_layout').eq(titleIndex).text().trim();
     reading = this.removeAngleBracketContent(reading);
     const unwantedString = '주님의 말씀입니다.◎ 그리스도님, 찬미합니다.';
@@ -54,16 +54,15 @@ export class DailyDataService {
     }
     const readingRes: Reading = {
       type: 'GOSPEL',
-      index: -1,
+      index: titleIndex,
       title,
       contents: reading
     }
     return readingRes;
   }
 
-  // date ex : '2024-12-25'
-  async scrapDay(date: string): Promise<Types.ObjectId> {
-    const url = `https://maria.catholic.or.kr/mi_pr/missa/missa.asp?menu=missa&gomonth=${date}`;
+  async scrapByDay(year: number, month: number, day: number): Promise<Types.ObjectId> {
+    const url = `https://maria.catholic.or.kr/mi_pr/missa/missa.asp?menu=missa&gomonth=${year}-${month}-${day}`;
     const { data } = await axios.get(url);
     const $ = cheerio.load(data);
 
@@ -80,9 +79,9 @@ export class DailyDataService {
 
     const dailyData = new this.dailyDataModel({
       date: {
-        year: Number(date.split('-')[0]),
-        month: Number(date.split('-')[1]),
-        day: Number(date.split('-')[2]),
+        year,
+        month,
+        day,
       },
       status: 'DRAFT',
       scripture: readingList.filter((reading) => reading.type === 'SCRIPTURE'),
@@ -98,5 +97,25 @@ export class DailyDataService {
 
   removeAngleBracketContent(text: string): string {
     return text.replace(/<[^>]*>/g, '').trim();
+  }
+
+  async scrapByMonth(year: number, month: number): Promise<number> {
+    const dailyDataIds: Types.ObjectId[] = [];
+    for (let i = 1; i <= 31; i++) {
+      const date = `${year}-${month}-${i}`;
+      const url = `https://maria.catholic.or.kr/mi_pr/missa/missa.asp?menu=missa&gomonth=${date}`;
+      try {
+        const { data } = await axios.get(url);
+      } catch (error) {
+        if (error.response && error.response.status === 500) {
+          break; // Exit the loop if a 500 response is received
+        } else {
+          throw error; // Rethrow other errors
+        }
+      }
+      const dailyDataId = await this.scrapByDay(year, month, i);
+      dailyDataIds.push(dailyDataId);
+    }
+    return dailyDataIds.length;
   }
 }

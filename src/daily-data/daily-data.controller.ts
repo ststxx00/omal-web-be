@@ -5,9 +5,9 @@ import { DailyDataService } from './daily-data.service';
 export class DailyDataController {
   constructor(private readonly dailyDataService: DailyDataService) {}
 
-  // date ex : '2024-12-25'
-  @Get('reading')
-  fetchReadings(@Query('date') date: string) {
-    return this.dailyDataService.scrapDay(date);
+  // scrap Gosphel and Scriptures by month from missa website.
+  @Get('save-readings')
+  saveReadingsByMonth(@Query('year') year: string, @Query('month') month: string) {
+    return this.dailyDataService.scrapByMonth(+year, +month);
   }
 }
