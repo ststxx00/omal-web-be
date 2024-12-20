@@ -118,4 +118,19 @@ export class DailyDataService {
     }
     return dailyDataIds.length;
   }
+
+  async isNextMonthScraped(): Promise<boolean> {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1;
+    const nextMonth = month === 12 ? 1 : month + 1;
+    const nextYear = month === 12 ? year + 1 : year;
+
+    const dailyData = await this.dailyDataModel.findOne({
+      'date.year': nextYear,
+      'date.month': nextMonth,
+    });
+
+    return dailyData !== null;
+  }
 }
